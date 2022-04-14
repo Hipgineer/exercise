@@ -1,3 +1,6 @@
+#include "common.h"
+#include "shader.h"
+
 #include <spdlog/spdlog.h>
 #include <glad/glad.h> // GLFW이전에 추가해야함
 #include <GLFW/glfw3.h>
@@ -10,6 +13,12 @@ OpenGL State using function
     - OpenGL Contxext 에 저장된 state를 이용
     - glClear()
 
+Shader : 
+    - GPU상에서 실행되는 작은 프로그램
+    - GLSL (shading language) C기반 언어
+    - Vertex / Fragment
+    - Shader 코드는 openGL 코드 내에서 빌드/로딩됨
+    - 미리 빌드한 뒤 로딩하는 방법: SPIR-V  
 */
 
 
@@ -49,16 +58,13 @@ int main(int argc, const char** argv)
     }
 
     ///OPENGL에 대한 힌트를 주는 부분 glfw함수
-    //glfwInit() 호출 후
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    //glfwCreateWindow() 호출 전
 
     // glfw 윈도우 생성
     SPDLOG_INFO("Create glfw window");
     GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME, nullptr, nullptr);
-    // auto window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME, nullptr, nullptr);
     if(!window){
         SPDLOG_ERROR("faied to create glfw window");
         glfwTerminate();
@@ -82,6 +88,13 @@ int main(int argc, const char** argv)
     // 그래서 여기다가 두고 한번 테스트 해보는 듯?
     auto glVersion = glGetString(GL_VERSION); 
     SPDLOG_INFO("OpenGL context version: {}", glVersion);
+
+    // ------ OpenGL을 쓸 수 있는 경계 ------
+
+    auto vertexShader = Shader::CreateFromFile("./shader/simple.vs", GL_VERTEX_SHADER);
+    auto fragmentShader = Shader::CreateFromFile("./shader/simple.fs", GL_FRAGMENT_SHADER);
+    SPDLOG_INFO("vertex shader id {}", vertexShader->Get());
+    SPDLOG_INFO("fragment shader id {}", fragmentShader->Get());
 
     // 아래 PollEvent에서 프레임버퍼사이즈가 바뀐것이 수집되면 On~가 실행되도록 미리 설정
     // 위도우 생성 직후에는 프레임버퍼 변경 이벤트가 발생하지 않으므로 첫 호출은 수동으로 함

@@ -8,7 +8,7 @@
 
 cmake_minimum_required(VERSION 3.14)
 
-set(PROJECT_NAME first_opengl_example)
+set(PROJECT_NAME opengl_example)
 set(CMAKE_CXX_STANDARD 17)
 
 # cpp에서 사용할 것이다.
@@ -17,7 +17,11 @@ set(WINDOW_WIDTH 960)
 set(WINDOW_HEIGHT 540)
 
 project(${PROJECT_NAME})
-add_executable(${PROJECT_NAME} src/main.cpp)
+add_executable(${PROJECT_NAME} 
+    src/main.cpp
+    src/common.cpp src/common.h
+    src/shader.cpp src/shader.h
+    )
 
 include(Dependency.cmake)
 
