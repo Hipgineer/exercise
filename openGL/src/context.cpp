@@ -22,35 +22,17 @@ bool Context::Init() {
     };
 
     // vertextArrayObject는 buffer를 만들기 전에 선언
-    glGenVertexArrays(1, &m_vertexArrayObject);
-    glBindVertexArray(m_vertexArrayObject); // 지금부터 사용할 어레이는 이놈이야!
+    m_vertexLayout = VertexLayout::Create();
+    // glGenVertexArrays(1, &m_vertexArrayObject);
+    // glBindVertexArray(m_vertexArrayObject); // 지금부터 사용할 어레이는 이놈이야!
 
+    m_vertexBuffer = Buffer::CreateWithData(GL_ARRAY_BUFFER,GL_STATIC_DRAW, vertices, sizeof(float)*12);
 
-    // 버퍼를 만든다. 
-    glGenBuffers(1, &m_vertexBuffer); 
-    // 버퍼에는 버택스의 입자가들어갈 버퍼야 아래에서 추가할꺼니까 이거 보고 있어
-    // 위에서 VAO도 바인드 해놧으니까 거기에 같이 바인딩 됨
-    glBindBuffer(GL_ARRAY_BUFFER, m_vertexBuffer); 
-    // 불러온버퍼(GL_ARRAY_BUFFER)에 sizeof 만큼의 자리에 vertices(포인터) 를 넣어줘
-    // GL_STATIC_DRAW? : 버퍼에 버택스세팅할거고 다신 안바뀔거야.
-    // 데이터는 바이트단위로 들어가니까 무슨 정보인지 알려줘야해. ==> VAO
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*12, vertices, GL_STATIC_DRAW);
+    m_vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*3, 0);
+    // glEnableVertexAttribArray(0);
+    // glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*3, 0);
 
-
-    // 0 번 AttribArray를 쓸것이다.
-    // --> vs의 location의 번호 
-    glEnableVertexAttribArray(0);
-    // 0 번 AttribArray는 어떻게 생겼냐면 (0)
-    // 3개의
-    // float데이터고
-    // 노말라이즈 할 필요 없고
-    // 3개씩 건너 뛰어라 (stride)
-    // offset은 0이다.
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*3, 0);
-
-    glGenBuffers(1, &m_indexBuffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t)*6, indices, GL_STATIC_DRAW);
+    m_indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t)*6);
 
     ShaderPtr vertShader = Shader::CreateFromFile("./shader/simple.vs", GL_VERTEX_SHADER);
     ShaderPtr fragShader = Shader::CreateFromFile("./shader/simple.fs", GL_FRAGMENT_SHADER);
@@ -73,7 +55,7 @@ bool Context::Init() {
 void Context::Render() {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    glUseProgram(m_program->Get());
+    m_program->Use();
     // 지금 바인딩 되어있는 VAO의 VBO로 그림
     // 몇번째부터 그릴건지, 몇 개의 데이터를 그릴건지
     // glDrawArrays(GL_TRIANGLES, 0, 6); 
