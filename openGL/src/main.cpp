@@ -1,5 +1,7 @@
-#include "common.h"
-#include "shader.h"
+// #include "common.h"
+// #include "shader.h"
+// #include "program.h"
+#include "context.h"
 
 #include <spdlog/spdlog.h>
 #include <glad/glad.h> // GLFW이전에 추가해야함
@@ -91,10 +93,16 @@ int main(int argc, const char** argv)
 
     // ------ OpenGL을 쓸 수 있는 경계 ------
 
-    auto vertexShader = Shader::CreateFromFile("./shader/simple.vs", GL_VERTEX_SHADER);
-    auto fragmentShader = Shader::CreateFromFile("./shader/simple.fs", GL_FRAGMENT_SHADER);
-    SPDLOG_INFO("vertex shader id {}", vertexShader->Get());
-    SPDLOG_INFO("fragment shader id {}", fragmentShader->Get());
+    // Context 초기화
+    auto context = Context::Create();
+    if(!context) {
+        SPDLOG_ERROR("failed to create context");
+        glfwTerminate();
+        return -1;
+    }
+
+    // Create Program : pipe line
+
 
     // 아래 PollEvent에서 프레임버퍼사이즈가 바뀐것이 수집되면 On~가 실행되도록 미리 설정
     // 위도우 생성 직후에는 프레임버퍼 변경 이벤트가 발생하지 않으므로 첫 호출은 수동으로 함
@@ -108,14 +116,16 @@ int main(int argc, const char** argv)
     SPDLOG_INFO("Start main loop");
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents(); // 키/마우스 이벤트를 수집하는 이벤트!
-        glClearColor(0.0f, 0.1f, 0.2f, 0.0f); // 화면을 지울 컬러 // 포문 밖에서 해도됭
-        glClear(GL_COLOR_BUFFER_BIT); // 화면을 지우는 것
+        context->Render();
         // 더블버퍼!
         // front 버퍼와 back 버퍼가 존재하여서
         // 그리는 동안에는 보여주지 않다가 다그려지고 나면 바꿔치기
         // 이를 계속 반복
         glfwSwapBuffers(window);
     }   
+    context.reset(); // 메모리 해제
+    //context = nullptr;
+    
     glfwTerminate();
     return 0;
 }
