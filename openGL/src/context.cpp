@@ -9,11 +9,16 @@ ContextUPtr Context::Create() {
 
 bool Context::Init() {
 
-    // vertex
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
+         0.5f,  0.5f, 0.0f,
          0.5f, -0.5f, 0.0f,
-         0.0f,  0.5f, 0.0f,
+        -0.5f, -0.5f, 0.0f,
+        -0.5f,  0.5f, 0.0f,
+    };
+
+    uint32_t indices[] = {
+        0, 1, 3,
+        1, 2, 3,
     };
 
     // vertextArrayObject는 buffer를 만들기 전에 선언
@@ -29,7 +34,7 @@ bool Context::Init() {
     // 불러온버퍼(GL_ARRAY_BUFFER)에 sizeof 만큼의 자리에 vertices(포인터) 를 넣어줘
     // GL_STATIC_DRAW? : 버퍼에 버택스세팅할거고 다신 안바뀔거야.
     // 데이터는 바이트단위로 들어가니까 무슨 정보인지 알려줘야해. ==> VAO
-    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*9, vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(float)*12, vertices, GL_STATIC_DRAW);
 
 
     // 0 번 AttribArray를 쓸것이다.
@@ -42,6 +47,10 @@ bool Context::Init() {
     // 3개씩 건너 뛰어라 (stride)
     // offset은 0이다.
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*3, 0);
+
+    glGenBuffers(1, &m_indexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t)*6, indices, GL_STATIC_DRAW);
 
     ShaderPtr vertShader = Shader::CreateFromFile("./shader/simple.vs", GL_VERTEX_SHADER);
     ShaderPtr fragShader = Shader::CreateFromFile("./shader/simple.fs", GL_FRAGMENT_SHADER);
@@ -65,5 +74,8 @@ void Context::Render() {
     glClear(GL_COLOR_BUFFER_BIT);
 
     glUseProgram(m_program->Get());
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    // 지금 바인딩 되어있는 VAO의 VBO로 그림
+    // 몇번째부터 그릴건지, 몇 개의 데이터를 그릴건지
+    // glDrawArrays(GL_TRIANGLES, 0, 6); 
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
