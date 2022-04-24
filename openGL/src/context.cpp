@@ -46,6 +46,10 @@ bool Context::Init() {
         return false;
     SPDLOG_INFO("program id: {}", m_program->Get());
 
+    auto loc = glGetUniformLocation(m_program->Get(), "color");
+    m_program->Use(); // 이프로그램으로 그림을 그리겠다.
+    glUniform4f(loc, 1.0f, 1.0f, 0.0f, 1.0f);
+
     // Initializing
     glClearColor(0.0f, 0.1f, 0.2f, 0.0f); // 화면을 지울 컬러 // 포문 밖에서 해도됭
 
@@ -55,9 +59,12 @@ bool Context::Init() {
 void Context::Render() {
     glClear(GL_COLOR_BUFFER_BIT);
 
-    m_program->Use();
-    // 지금 바인딩 되어있는 VAO의 VBO로 그림
-    // 몇번째부터 그릴건지, 몇 개의 데이터를 그릴건지
-    // glDrawArrays(GL_TRIANGLES, 0, 6); 
+    static float time = 0.0f; 
+    float t = sinf(time) * 0.5f + 0.5f;
+    auto loc = glGetUniformLocation(m_program->Get(), "color");
+    m_program->Use(); 
+    glUniform4f(loc, t*t, 2.0f*t*(1.0f-t), (1.0f-t)*(1.0f-t), 1.0f);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    time += 0.016f;
 }
