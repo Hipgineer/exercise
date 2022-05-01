@@ -53,3 +53,19 @@ ExternalProject_Add(
 ) 
 set(DEP_LIST ${DEP_LIST} dep-glad)
 set(DEP_LIBS ${DEP_LIBS} glad) 
+
+ExternalProject_Add(
+    dep_stb
+    GIT_REPOSITORY "https://github.com/nothings/stb.git"
+    GIT_TAG "master"
+    GIT_SHALLOW 1
+    UPDATE_COMMAND ""
+    PATCH_COMMAND ""                                                                                                                                                                                        
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+    TEST_COMMAND ""
+    INSTALL_COMMAND ${CMAKE_COMMAND} -E copy # macOS, Linux, Window에서 다 가능
+        ${PROJECT_BINARY_DIR}/dep_stb-prefix/src/dep_stb/stb_image.h #빌드 디렉토리에 clone 되는 위치
+        ${DEP_INSTALL_DIR}/include/stb/stb_image.h
+)
+set(DEP_LIST ${DEP_LIST} dep_stb)
