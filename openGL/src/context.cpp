@@ -62,8 +62,30 @@ bool Context::Init() {
     SPDLOG_INFO("image: {}x{}, {} channels",
         image->GetWidth(), image->GetHeight(), image->GetChannelCount());
 
+    // // Create Image
+    // auto image = Image::Create(512,512);
+    // image->SetCheckImage(16,16);
+
     m_texture = Texture::CreateFromImage(image.get());
+
+    auto image2 = Image::Load("./image/awesomeface.png");
+    if(!image2)
+        return false;
+    SPDLOG_INFO("image2: {}x{}, {} channels",
+        image2->GetWidth(), image2->GetHeight(), image2->GetChannelCount());
+    m_texture2= Texture::CreateFromImage(image2.get());
     
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_texture->Get());
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, m_texture2->Get());
+
+    m_program->Use();
+    glUniform1i(glGetUniformLocation(m_program->Get(), "tex"), 0);
+    glUniform1i(glGetUniformLocation(m_program->Get(), "tex2"), 1);
+    
+
+
     return true;
 }
 
