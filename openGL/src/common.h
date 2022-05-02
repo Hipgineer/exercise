@@ -7,6 +7,9 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <spdlog/spdlog.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 // 여기서 ## 은 kalssNameUPtr 이렇게 붙여주는 역할!!!
 #define CLASS_PTR(klassName) \
