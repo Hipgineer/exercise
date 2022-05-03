@@ -6,6 +6,8 @@
 #include <spdlog/spdlog.h>
 #include <glad/glad.h> // GLFW이전에 추가해야함
 #include <GLFW/glfw3.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 /*
 OpenGL State setting function
@@ -36,14 +38,24 @@ void OnCursorPos(GLFWwindow* window, double x, double y) {
 }
 
 void OnMouseButton(GLFWwindow* window, int button, int action, int modifier) {
+    ImGui_ImplGlfw_MouseButtonCallback(window, button, action, modifier);
     auto context =  reinterpret_cast<Context*>(glfwGetWindowUserPointer(window));
     double x, y;
     glfwGetCursorPos(window, &x, &y);
     context->MouseButton(button,action, x, y);
 }
 
+void OnCharEvent(GLFWwindow* window, unsigned int ch) {
+    ImGui_ImplGlfw_CharCallback(window, ch);
+}
+
+void OnScroll(GLFWwindow* window, double xoffset, double yoffset) {
+    ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
+}
+
 void OnKeyEvent(GLFWwindow* window,
     int key, int scancode, int action, int mods){
+    ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
     SPDLOG_INFO("key: {}, scancode: {}, action: {}, modes: {}{}{}",
         key, scancode,
         action == GLFW_PRESS ? "Pressed" :
@@ -106,6 +118,13 @@ int main(int argc, const char** argv)
 
     // ------ OpenGL을 쓸 수 있는 경계 ------
 
+    auto imguiContext = ImGui::CreateContext();
+    ImGui::SetCurrentContext(imguiContext);
+    ImGui_ImplGlfw_InitForOpenGL(window, false);
+    ImGui_ImplOpenGL3_Init();
+    ImGui_ImplOpenGL3_CreateFontsTexture();
+    ImGui_ImplOpenGL3_CreateDeviceObjects();
+
     // Context 초기화
     auto context = Context::Create();
     if(!context) {
@@ -126,24 +145,33 @@ int main(int argc, const char** argv)
     OnFramebufferSizeChange(window, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(window, OnFramebufferSizeChange);
     glfwSetKeyCallback(window, OnKeyEvent);
+    glfwSetCharCallback(window, OnCharEvent);
     glfwSetCursorPosCallback(window, OnCursorPos);
     glfwSetMouseButtonCallback(window, OnMouseButton);
-
+    glfwSetScrollCallback(window, OnScroll);
 
     // Main 루프
     SPDLOG_INFO("Start main loop");
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents(); // 키/마우스 이벤트를 수집하는 이벤트!
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
         context->ProcessInput(window);
         context->Render();
-        // 더블버퍼!
-        // front 버퍼와 back 버퍼가 존재하여서
-        // 그리는 동안에는 보여주지 않다가 다그려지고 나면 바꿔치기
-        // 이를 계속 반복
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); // newframe이후에 쌓인 것들을 랜더
         glfwSwapBuffers(window);
     }   
     context.reset(); // 메모리 해제
     //context = nullptr;
+
+    ImGui_ImplOpenGL3_DestroyFontsTexture();
+    ImGui_ImplOpenGL3_DestroyDeviceObjects();
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext(imguiContext);
 
     glfwTerminate();
     return 0;
