@@ -11,29 +11,58 @@ ContextUPtr Context::Create() {
 bool Context::Init() {
 
     float vertices[] = {
-         0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-         0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-        -0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+        
+        -0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
+        
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+         0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
+         0.5f,  0.5f, 0.5f, 1.0f, 1.0f,
+        -0.5f,  0.5f, 0.5f, 0.0f, 1.0f,
+        
+        -0.5f,  0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        -0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+        
+        0.5f,  0.5f, 0.5f, 1.0f, 0.0f,
+        0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
+        0.5f, -0.5f, -0.5f, 0.0f, 1.0f,
+        0.5f, -0.5f, 0.5f, 0.0f, 0.0f,
+
+        -0.5f,  -0.5f, -0.5f, 0.0f, 1.0f,
+         0.5f,  -0.5f, -0.5f, 1.0f, 1.0f,
+         0.5f,  -0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f,  -0.5f, 0.5f, 0.0f, 0.0f,
+
+        -0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
+         0.5f,  0.5f, 0.5f, 1.0f, 0.0f,
+        -0.5f,  0.5f, 0.5f, 0.0f, 0.0f,        
     };
 
     uint32_t indices[] = {
-        0, 1, 3,
-        1, 2, 3,
+         0,  2,  1,  2,  0,  3,
+         4,  5,  6,  6,  7,  4,
+         8,  9, 10, 10, 11,  8,
+        12, 14, 13, 14, 12, 15,
+        16, 17, 18, 18, 19, 16,
+        20, 22, 21, 22, 20, 23,
     };
 
     m_vertexLayout = VertexLayout::Create();
 
-    m_vertexBuffer = Buffer::CreateWithData(GL_ARRAY_BUFFER,GL_STATIC_DRAW, vertices, sizeof(float)*32);
+    m_vertexBuffer = Buffer::CreateWithData(GL_ARRAY_BUFFER,GL_STATIC_DRAW, vertices, sizeof(float)*120);
 
     // vertices가 어떻게 생겼는지 기술해 주는 부분!
-    m_vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*8, 0);
-    m_vertexLayout->SetAttrib(1, 3, GL_FLOAT, GL_FALSE, sizeof(float)*8, sizeof(float)*3);
-    m_vertexLayout->SetAttrib(2, 2, GL_FLOAT, GL_FALSE, sizeof(float)*8, sizeof(float)*6);
+    m_vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*5, 0);
+    m_vertexLayout->SetAttrib(2, 2, GL_FLOAT, GL_FALSE, sizeof(float)*5, sizeof(float)*3);
     // m_vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*3, 0);
 
 
-    m_indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t)*6);
+    m_indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t)*36);
 
     ShaderPtr vertShader = Shader::CreateFromFile("./shader/texture.vs", GL_VERTEX_SHADER);
     ShaderPtr fragShader = Shader::CreateFromFile("./shader/texture.fs", GL_FRAGMENT_SHADER);
@@ -81,31 +110,45 @@ bool Context::Init() {
     glBindTexture(GL_TEXTURE_2D, m_texture2->Get());
 
     m_program->Use();
-    glUniform1i(glGetUniformLocation(m_program->Get(), "tex"), 0);
-    glUniform1i(glGetUniformLocation(m_program->Get(), "tex2"), 1);
+    m_program->SetUniform("tex", 0);
+    m_program->SetUniform("tex2", 1);
 
-    auto transform = glm::rotate(
-        glm::scale(glm::mat4(1.0f), glm::vec3(0.5f)),
-        glm::radians(90.0f), glm::vec3(0.0f,0.0f,1.0f)
-        );
-    // auto transform = glm::translate(glm::mat4(1.0f), glm::vec3(0.3f,0.2f,0.0f));
-    auto transformLoc = glGetUniformLocation(m_program->Get(),"transform");
-    glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));    
-    // glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
-    // auto trans = glm::translate(glm::mat4(1.0f), glm::vec3(1.0f,1.0f,0.0f));
-    // auto rot = glm::rotate(glm::mat4(1.0f),glm::radians(90.0f),glm::vec3(0.0f,0.0f,1.0f));
-    // auto scale = glm::scale(glm::mat4(1.0f), glm::vec3(3.0f));
-    // vec = trans*rot*scale*vec;
-    // SPDLOG_INFO("transformed vec: [{} {} {}]", vec.x, vec.y, vec.z);
+    //Model View Projection Transform
+    auto model = glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f), glm::vec3(1.0f,0.0f,0.0f));
+    auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-3.0f));
+    auto proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.01f, 10.0f);
+    auto transform = proj * view * model;
 
+    m_program->SetUniform("transform", transform); 
 
     return true;
 }
 
 void Context::Render() {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
     m_program->Use(); 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    auto model = glm::rotate(glm::mat4(1.0f), glm::radians((float)glfwGetTime()*120.0f), glm::vec3(1.0f,0.5f,0.0f));
+    
+    auto cameraPos = glm::vec3(0.0f,0.0f,10.0f);
+    auto cameraTarget = glm::vec3(0.0f,0.0f,0.0f);
+    auto cameraUp = glm::vec3(0.0f,1.0f,0.0f);
+    // 이거는 항상 쓰기 때문에 이미 함수가 있음
+    // auto cameraZ = glm::normalize(cameraPos - cameraTarget);
+    // auto cameraX = glm::normalize(glm::cross(cameraUp, cameraZ));
+    // auto cameraY = glm::cross(cameraZ, cameraX);
+    // auto cameraMat= glm::mat4(
+    //     glm::vec4(cameraX, 0.0f),
+    //     glm::vec4(cameraY, 0.0f),
+    //     glm::vec4(cameraZ, 0.0f),
+    //     glm::vec4(cameraPos, 1.0f));
+    // auto view = glm::inverse(cameraMat);
+    // auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-3.0f));
+    auto view = glm::lookAt(cameraPos,cameraTarget,cameraUp);
+    auto proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.01f, 10.0f);
+    auto transform = proj * view * model;
+    m_program->SetUniform("transform", transform);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
     // static float time = 0.0f; 
     // float t = sinf(time) * 0.5f + 0.5f;
@@ -115,4 +158,18 @@ void Context::Render() {
     // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     // time += 0.016f;
+}
+void Context::ProcessInput(GLFWwindow* window) {
+    const float cameraSpeed = 0.05f; 
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        m_cameraPos += cameraSpeed * m_cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        m_cameraPos -= cameraSpeed * m_cameraFront;
+
+    auto cameraRight = glm::normalize(glm::cross(m_cameraUp, -m_cameraFront));
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        m_cameraPos += cameraSpeed * cameraRight;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        m_cameraPos -= cameraSpeed * cameraRight;
+    
 }
