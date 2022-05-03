@@ -116,7 +116,7 @@ bool Context::Init() {
     //Model View Projection Transform
     auto model = glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f), glm::vec3(1.0f,0.0f,0.0f));
     auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-3.0f));
-    auto proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.01f, 10.0f);
+    auto proj = glm::perspective(glm::radians(45.0f), (float)m_width/(float)m_height, 0.01f, 10.0f);
     auto transform = proj * view * model;
 
     m_program->SetUniform("transform", transform); 
@@ -129,23 +129,8 @@ void Context::Render() {
     glEnable(GL_DEPTH_TEST);
     m_program->Use(); 
     auto model = glm::rotate(glm::mat4(1.0f), glm::radians((float)glfwGetTime()*120.0f), glm::vec3(1.0f,0.5f,0.0f));
-    
-    auto cameraPos = glm::vec3(0.0f,0.0f,10.0f);
-    auto cameraTarget = glm::vec3(0.0f,0.0f,0.0f);
-    auto cameraUp = glm::vec3(0.0f,1.0f,0.0f);
-    // 이거는 항상 쓰기 때문에 이미 함수가 있음
-    // auto cameraZ = glm::normalize(cameraPos - cameraTarget);
-    // auto cameraX = glm::normalize(glm::cross(cameraUp, cameraZ));
-    // auto cameraY = glm::cross(cameraZ, cameraX);
-    // auto cameraMat= glm::mat4(
-    //     glm::vec4(cameraX, 0.0f),
-    //     glm::vec4(cameraY, 0.0f),
-    //     glm::vec4(cameraZ, 0.0f),
-    //     glm::vec4(cameraPos, 1.0f));
-    // auto view = glm::inverse(cameraMat);
-    // auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-3.0f));
-    auto view = glm::lookAt(cameraPos,cameraTarget,cameraUp);
-    auto proj = glm::perspective(glm::radians(45.0f), (float)WINDOW_WIDTH/(float)WINDOW_HEIGHT, 0.01f, 10.0f);
+    auto view = glm::lookAt(m_cameraPos,m_cameraPos+m_cameraFront,m_cameraUp);
+    auto proj = glm::perspective(glm::radians(45.0f), (float)m_width/(float)m_height, 0.01f, 10.0f);
     auto transform = proj * view * model;
     m_program->SetUniform("transform", transform);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
@@ -171,5 +156,17 @@ void Context::ProcessInput(GLFWwindow* window) {
         m_cameraPos += cameraSpeed * cameraRight;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         m_cameraPos -= cameraSpeed * cameraRight;
+        
+    auto cameraUp = glm::normalize(glm::cross(-m_cameraFront, cameraRight));
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        m_cameraPos += cameraSpeed * cameraUp;
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        m_cameraPos -= cameraSpeed * cameraUp;
     
+}
+
+void Context::Reshape(int width, int height) {
+    m_width = width;
+    m_height = height;
+    glViewport(0, 0, m_width, m_height);
 }

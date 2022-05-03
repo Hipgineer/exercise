@@ -116,6 +116,7 @@ int main(int argc, const char** argv)
     SPDLOG_INFO("Start main loop");
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents(); // 키/마우스 이벤트를 수집하는 이벤트!
+        context->ProcessInput(window);
         context->Render();
         // 더블버퍼!
         // front 버퍼와 back 버퍼가 존재하여서
@@ -125,7 +126,7 @@ int main(int argc, const char** argv)
     }   
     context.reset(); // 메모리 해제
     //context = nullptr;
-    
+
     glfwTerminate();
     return 0;
 }
