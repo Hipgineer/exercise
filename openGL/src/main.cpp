@@ -26,7 +26,20 @@ Shader :
 
 void OnFramebufferSizeChange(GLFWwindow* window, int width, int height) {
     SPDLOG_INFO("framebuffer size changed : ({} x {})", width, height);
-    glViewport(0,0,width, height); // 그림을 그릴 화면의 위치 및 크기
+    auto context = reinterpret_cast<Context*>(glfwGetWindowUserPointer(window)); // 이렇게 onFramebuffer에서 ㅅ용
+    context->Reshape(width, height);
+}
+
+void OnCursorPos(GLFWwindow* window, double x, double y) {
+    auto context =  reinterpret_cast<Context*>(glfwGetWindowUserPointer(window));
+    context->MouseMove(x, y);
+}
+
+void OnMouseButton(GLFWwindow* window, int button, int action, int modifier) {
+    auto context =  reinterpret_cast<Context*>(glfwGetWindowUserPointer(window));
+    double x, y;
+    glfwGetCursorPos(window, &x, &y);
+    context->MouseButton(button,action, x, y);
 }
 
 void OnKeyEvent(GLFWwindow* window,
@@ -100,6 +113,10 @@ int main(int argc, const char** argv)
         glfwTerminate();
         return -1;
     }
+    //viewpot를 바꾸고 싶은데 constext를 사용 못하는 곳에 콜백이 있음
+    //그래서 포인터를 사용
+    glfwSetWindowUserPointer(window, context.get());
+    // auto pointer = (Context*)glfwGetWindowUserPointer(window); // 이렇게 onFramebuffer에서 ㅅ용
 
     // Create Program : pipe line
 
@@ -109,7 +126,8 @@ int main(int argc, const char** argv)
     OnFramebufferSizeChange(window, WINDOW_WIDTH, WINDOW_HEIGHT);
     glfwSetFramebufferSizeCallback(window, OnFramebufferSizeChange);
     glfwSetKeyCallback(window, OnKeyEvent);
-
+    glfwSetCursorPosCallback(window, OnCursorPos);
+    glfwSetMouseButtonCallback(window, OnMouseButton);
 
 
     // Main 루프
