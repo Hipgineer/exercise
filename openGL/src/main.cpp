@@ -51,6 +51,8 @@ void OnCharEvent(GLFWwindow* window, unsigned int ch) {
 
 void OnScroll(GLFWwindow* window, double xoffset, double yoffset) {
     ImGui_ImplGlfw_ScrollCallback(window, xoffset, yoffset);
+    auto context =  reinterpret_cast<Context*>(glfwGetWindowUserPointer(window));
+    context->MouseWheel(xoffset, yoffset);
 }
 
 void OnKeyEvent(GLFWwindow* window,

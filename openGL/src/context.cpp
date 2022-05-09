@@ -204,7 +204,7 @@ void Context::MouseMove(double x, double y) {
 }
 
 void Context::MouseButton(int button, int action, double x, double y) {
-    if (button == GLFW_MOUSE_BUTTON_RIGHT) {
+    if (button == GLFW_MOUSE_BUTTON_MIDDLE) {
         if (action == GLFW_PRESS) {
             m_prevMousePos = glm::vec2((float)x, (float)y);
             m_cameraControl = true;
@@ -213,6 +213,11 @@ void Context::MouseButton(int button, int action, double x, double y) {
             m_cameraControl = false;
         }
     }
+}
+
+void Context::MouseWheel(double xoffset, double yoffset) {
+    const float cameraSpeed = 0.5f; 
+    m_cameraPos += glm::vec3(cameraSpeed * yoffset) * m_cameraFront;
 }
 
 void Context::Reshape(int width, int height) {

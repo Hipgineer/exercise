@@ -16,6 +16,7 @@ public:
     void ProcessInput(GLFWwindow* window);
     void MouseMove(double x, double y);
     void MouseButton(int button, int action, double x, double y);
+    void MouseWheel(double xoffset, double yoffset);
     void Reshape(int width, int height);
 
 private:
