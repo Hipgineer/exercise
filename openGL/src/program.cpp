@@ -15,9 +15,9 @@ ProgramUPtr Program::Create(const std::vector<ShaderPtr>& shaders) {
 }
 
 bool Program::Link(const std::vector<ShaderPtr>& shaders){
-    m_program = glCreateProgram(); // id를 얻는다
+    m_program = glCreateProgram(); // get program id
     for (auto& shader:shaders) // c++11
-        glAttachShader(m_program, shader->Get()); // 인자 shader id 를 가져온다.
+        glAttachShader(m_program, shader->Get()); // get shader id
 
     glLinkProgram(m_program);
     int success = 0;
@@ -30,7 +30,6 @@ bool Program::Link(const std::vector<ShaderPtr>& shaders){
     }
     return true;
 }
-
 
 void Program::Use() const {
     glUseProgram(m_program);

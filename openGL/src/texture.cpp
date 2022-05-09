@@ -18,13 +18,13 @@ void Texture::Bind() const {
 }
 
 void Texture::SetFilter(uint32_t minFilter, uint32_t magFilter) const {    
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter); // 정수면 i // 작아지면 필터
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter); // 너무 커지면 필터
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minFilter); // filter for minimally zooming out
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magFilter); // filter for maximally zooming in
 }
 
 void Texture::SetWrap(uint32_t sWrap, uint32_t tWrap) const {
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sWrap); // 영역 밖 x방향
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tWrap); // y방향 영역 밖
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, sWrap); // filter for pixels outside of x-dir boundary
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, tWrap); // filter for pixels outside of y-dir boundary
 }
 
 void Texture::CreateTexture() {
@@ -44,7 +44,7 @@ void Texture::SetTextureFromImage(const Image* image) {
         case 3: format = GL_RGB; break;
     }
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, // 4byte가 처리 효율이 좋아서~!
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, // RGBA? ==> 4bytes : efficient
         image->GetWidth(), image->GetHeight(), 0,
         format, GL_UNSIGNED_BYTE, 
         image->GetData());

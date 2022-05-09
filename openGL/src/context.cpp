@@ -55,16 +55,17 @@ bool Context::Init() {
 
     m_vertexLayout = VertexLayout::Create();
 
+    // setting the format of vertices
     m_vertexBuffer = Buffer::CreateWithData(GL_ARRAY_BUFFER,GL_STATIC_DRAW, vertices, sizeof(float)*120);
 
-    // vertices가 어떻게 생겼는지 기술해 주는 부분!
+    // setting the format of vertices
     m_vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*5, 0);
     m_vertexLayout->SetAttrib(2, 2, GL_FLOAT, GL_FALSE, sizeof(float)*5, sizeof(float)*3);
-    // m_vertexLayout->SetAttrib(0, 3, GL_FLOAT, GL_FALSE, sizeof(float)*3, 0);
 
-
+    // setting the format of triangle indices 
     m_indexBuffer = Buffer::CreateWithData(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, indices, sizeof(uint32_t)*36);
 
+    // linking shaders
     ShaderPtr vertShader = Shader::CreateFromFile("./shader/texture.vs", GL_VERTEX_SHADER);
     ShaderPtr fragShader = Shader::CreateFromFile("./shader/texture.fs", GL_FRAGMENT_SHADER);
     if (!vertShader || ! fragShader)
@@ -72,30 +73,21 @@ bool Context::Init() {
     SPDLOG_INFO("vertex shader id {}", vertShader->Get());
     SPDLOG_INFO("fragment shader id {}", fragShader->Get());
 
+    // creating shader program 
     m_program = Program::Create({fragShader, vertShader});
     if(!m_program)
         return false;
     SPDLOG_INFO("program id: {}", m_program->Get());
 
-    // auto loc = glGetUniformLocation(m_program->Get(), "color");
-    // m_program->Use(); // 이프로그램으로 그림을 그리겠다.
-    // glUniform4f(loc, 1.0f, 1.0f, 0.0f, 1.0f);
-
     // Initializing
-    glClearColor(0.0f, 0.1f, 0.2f, 0.0f); // 화면을 지울 컬러 // 포문 밖에서 해도됭
+    glClearColor(0.0f, 0.1f, 0.2f, 0.0f); // default background color
 
-
-    // Image load
+    // Loading Texture Images
     auto image = Image::Load("./image/container.jpg");
     if (!image)
         return false ;
     SPDLOG_INFO("image: {}x{}, {} channels",
         image->GetWidth(), image->GetHeight(), image->GetChannelCount());
-
-    // // Create Image
-    // auto image = Image::Create(512,512);
-    // image->SetCheckImage(16,16);
-
     m_texture = Texture::CreateFromImage(image.get());
 
     auto image2 = Image::Load("./image/awesomeface.png");
@@ -114,18 +106,11 @@ bool Context::Init() {
     m_program->SetUniform("tex", 0);
     m_program->SetUniform("tex2", 1);
 
-    //Model View Projection Transform
-    // auto model = glm::rotate(glm::mat4(1.0f), glm::radians(-55.0f), glm::vec3(1.0f,0.0f,0.0f));
-    // auto view = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f,0.0f,-3.0f));
-    // auto proj = glm::perspective(glm::radians(45.0f), (float)m_width/(float)m_height, 0.01f, 10.0f);
-    // auto transform = proj * view * model;
-
-    // m_program->SetUniform("transform", transform); 
-
     return true;
 }
 
 void Context::Render() {
+    // imgui - setting GUI 
     if(ImGui::Begin("ui window")) {
         if (ImGui::ColorEdit4("clear color", glm::value_ptr(m_clearColor)))
             glClearColor(m_clearColor.x, m_clearColor.y, m_clearColor.z, m_clearColor.w);
@@ -141,8 +126,12 @@ void Context::Render() {
         }
     }
     ImGui::End();
+
+    // opengl - intialize frame
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
+
+    // opengl - render elements
     m_cameraFront =
         glm::rotate(glm::mat4(1.0f), glm::radians(m_cameraYaw), glm::vec3(0.0f,1.0f,0.0f)) *
         glm::rotate(glm::mat4(1.0f), glm::radians(m_cameraPitch), glm::vec3(1.0f,0.0f,0.0f)) *
@@ -154,16 +143,8 @@ void Context::Render() {
     auto transform = proj * view * model;
     m_program->SetUniform("transform", transform);
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-    // static float time = 0.0f; 
-    // float t = sinf(time) * 0.5f + 0.5f;
-    // auto loc = glGetUniformLocation(m_program->Get(), "color");
-    // m_program->Use(); 
-    // glUniform4f(loc, t*t, 2.0f*t*(1.0f-t), (1.0f-t)*(1.0f-t), 1.0f);
-    // glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-    // time += 0.016f;
 }
+
 void Context::ProcessInput(GLFWwindow* window) {
     const float cameraSpeed = 0.05f; 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)

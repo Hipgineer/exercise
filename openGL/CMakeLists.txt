@@ -1,9 +1,9 @@
 ## Configure
-## 빌드 전 VS형태로 구체화하는 단계
+## -- step for preparing build for Visual Studio
 # cmake -Bbuild . -DCMAKE_BUILD_TYPE=Debug
 
 ## Build
-## 실제 빌드
+## -- step for building code
 # cmake --build build --config Debug
 
 cmake_minimum_required(VERSION 3.14)
@@ -11,7 +11,7 @@ cmake_minimum_required(VERSION 3.14)
 set(PROJECT_NAME opengl_example)
 set(CMAKE_CXX_STANDARD 17)
 
-# cpp에서 사용할 것이다.
+# macro will be used in cpp codes
 set(WINDOW_NAME "OpenGL Example")
 set(WINDOW_WIDTH 960)
 set(WINDOW_HEIGHT 540)
