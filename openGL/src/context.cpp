@@ -137,11 +137,17 @@ void Context::Render() {
         glm::rotate(glm::mat4(1.0f), glm::radians(m_cameraPitch), glm::vec3(1.0f,0.0f,0.0f)) *
         glm::vec4(0.0f,0.0f,-1.0f,0.0f);
     m_program->Use(); 
-    auto model = glm::rotate(glm::mat4(1.0f), glm::radians((float)glfwGetTime()*120.0f), glm::vec3(1.0f,0.5f,0.0f));
+    auto model = glm::rotate(glm::mat4(1.0f), glm::radians((float)m_timestep), glm::vec3(1.0f,0.5f,0.0f));
     auto view = glm::lookAt(m_cameraPos,m_cameraPos+m_cameraFront,m_cameraUp);
     auto proj = glm::perspective(glm::radians(45.0f), (float)m_width/(float)m_height, 0.01f, 10.0f);
     auto transform = proj * view * model;
     m_program->SetUniform("transform", transform);
+
+    if (!m_pause || m_step)
+    {
+        m_timestep += 1;
+        m_step = false;
+    }
     glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }
 
@@ -163,7 +169,7 @@ void Context::ProcessInput(GLFWwindow* window) {
         m_cameraPos += cameraSpeed * cameraUp;
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
         m_cameraPos -= cameraSpeed * cameraUp;
-    
+        
 }
 
 void Context::MouseMove(double x, double y) {
@@ -205,4 +211,9 @@ void Context::Reshape(int width, int height) {
     m_width = width;
     m_height = height;
     glViewport(0, 0, m_width, m_height);
+}
+
+void Context::PressKey(int key, int scancode, int action, int mods) {
+    if (key == GLFW_KEY_P && action == GLFW_PRESS) m_pause = !m_pause;
+    if (key == GLFW_KEY_O && (action == GLFW_PRESS || action == GLFW_REPEAT)) m_step  = true;
 }

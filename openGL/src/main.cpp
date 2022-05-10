@@ -5,9 +5,16 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+// global variables
+GLFWwindow* g_window = nullptr;
+ContextUPtr g_context = nullptr;
+
+bool g_pause = false;
+bool g_step  = false;
+
 void OnFramebufferSizeChange(GLFWwindow* window, int width, int height) {
     SPDLOG_INFO("framebuffer size changed : ({} x {})", width, height);
-    auto context = reinterpret_cast<Context*>(glfwGetWindowUserPointer(window)); // 이렇게 onFramebuffer에서 ㅅ용
+    auto context = reinterpret_cast<Context*>(glfwGetWindowUserPointer(window));
     context->Reshape(width, height);
 }
 
@@ -37,6 +44,8 @@ void OnScroll(GLFWwindow* window, double xoffset, double yoffset) {
 void OnKeyEvent(GLFWwindow* window,
     int key, int scancode, int action, int mods){
     ImGui_ImplGlfw_KeyCallback(window, key, scancode, action, mods);
+    auto context =  reinterpret_cast<Context*>(glfwGetWindowUserPointer(window));
+    
     SPDLOG_INFO("key: {}, scancode: {}, action: {}, modes: {}{}{}",
         key, scancode,
         action == GLFW_PRESS ? "Pressed" :
@@ -48,6 +57,15 @@ void OnKeyEvent(GLFWwindow* window,
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
+    
+    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
+        g_pause = !g_pause;
+    }
+    
+    if (key == GLFW_KEY_O && action == GLFW_PRESS) {
+        g_step  = true;
+    }
+    context->PressKey(key, scancode, action, mods);
 }
 
 int main(int argc, const char** argv)
@@ -59,7 +77,7 @@ int main(int argc, const char** argv)
     if (!glfwInit()) {
         const char* description = nullptr;
         glfwGetError(&description);
-        SPDLOG_ERROR("faied to intialize glfw : {}", description);
+        SPDLOG_ERROR("failed to intialize glfw : {}", description);
         return -1;
     }
 
@@ -70,15 +88,15 @@ int main(int argc, const char** argv)
 
     // glfw - create window
     SPDLOG_INFO("Create glfw window");
-    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME, nullptr, nullptr);
-    if(!window){
+    g_window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_NAME, nullptr, nullptr);
+    if(!g_window){
         SPDLOG_ERROR("faied to create glfw window");
         glfwTerminate();
         return -1;
     }
     
     // glfw - make context on created windnow
-    glfwMakeContextCurrent(window);
+    glfwMakeContextCurrent(g_window);
 
     // glad - load opengl for glfw (had to be load after creating OpenGL context
     // -- glfwGetProcAddress: getting process of glfw, and load opengl on it
@@ -95,14 +113,14 @@ int main(int argc, const char** argv)
     // imgui - init imgui context
     auto imguiContext = ImGui::CreateContext();
     ImGui::SetCurrentContext(imguiContext);
-    ImGui_ImplGlfw_InitForOpenGL(window, false);
+    ImGui_ImplGlfw_InitForOpenGL(g_window, false);
     ImGui_ImplOpenGL3_Init();
     ImGui_ImplOpenGL3_CreateFontsTexture();
     ImGui_ImplOpenGL3_CreateDeviceObjects();
 
     // class Context - Initialize
-    auto context = Context::Create();
-    if(!context) {
+    g_context = Context::Create();
+    if(!g_context) {
         SPDLOG_ERROR("failed to create context");
         glfwTerminate();
         return -1;
@@ -110,35 +128,43 @@ int main(int argc, const char** argv)
 
     // Extract c_Context Pointer to use glfw callback outside of c_Context
     // -- after here, use like "auto pointer = (Context*)glfwGetWindowUserPointer(window);"
-    glfwSetWindowUserPointer(window, context.get());
+    glfwSetWindowUserPointer(g_window, g_context.get());
 
     // Create Program : pipe line
 
-
     // Callback functions
-    OnFramebufferSizeChange(window, WINDOW_WIDTH, WINDOW_HEIGHT); // manually set first frame buffer size
-    glfwSetFramebufferSizeCallback(window, OnFramebufferSizeChange);
-    glfwSetKeyCallback(window, OnKeyEvent);
-    glfwSetCharCallback(window, OnCharEvent);
-    glfwSetCursorPosCallback(window, OnCursorPos);
-    glfwSetMouseButtonCallback(window, OnMouseButton);
-    glfwSetScrollCallback(window, OnScroll);
+    OnFramebufferSizeChange(g_window, WINDOW_WIDTH, WINDOW_HEIGHT); // manually set first frame buffer size
+    glfwSetFramebufferSizeCallback(g_window, OnFramebufferSizeChange);
+    glfwSetKeyCallback(g_window, OnKeyEvent);
+    glfwSetCharCallback(g_window, OnCharEvent);
+    glfwSetCursorPosCallback(g_window, OnCursorPos);
+    glfwSetMouseButtonCallback(g_window, OnMouseButton);
+    glfwSetScrollCallback(g_window, OnScroll);
+
+    // HiPhysics - initialize solver
 
     // Main Loop
     SPDLOG_INFO("Start main loop");
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(g_window)) {
         glfwPollEvents(); // collecting events of mouse and keyboard
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
-        context->ProcessInput(window);
-        context->Render();
-
+            
+        if (!g_pause || g_step)
+        {
+            //some callbacks (upside) that interacts with HiPhysics
+            //HiPhysics - Compute a Frame
+            //BufferMapping - HiPhysics to opengl Context
+            g_step = false;
+        }
+        g_context->ProcessInput(g_window); //for every signal (ex. cameramoving)
+        g_context->Render();
+        
         ImGui::Render(); // Prepare the data for rendering so you can call GetDrawData()
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData()); // render GUI collected after "ImGui::NewFrame();"
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(g_window);
     }   
-    context.reset(); // or context = nullptr;
+    g_context.reset(); // or context = nullptr;
 
     ImGui_ImplOpenGL3_DestroyFontsTexture();
     ImGui_ImplOpenGL3_DestroyDeviceObjects();
@@ -147,5 +173,6 @@ int main(int argc, const char** argv)
     ImGui::DestroyContext(imguiContext);
 
     glfwTerminate();
+    g_window = nullptr;
     return 0;
 }
