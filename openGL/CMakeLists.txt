@@ -16,9 +16,12 @@ set(WINDOW_NAME "OpenGL Example")
 set(WINDOW_WIDTH 960)
 set(WINDOW_HEIGHT 540)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/scenes)
+
 project(${PROJECT_NAME})
 add_executable(${PROJECT_NAME} 
     src/main.cpp
+    # src/scenes.h
     src/common.cpp src/common.h
     src/shader.cpp src/shader.h
     src/program.cpp src/program.h
@@ -27,6 +30,7 @@ add_executable(${PROJECT_NAME}
     src/vertex_layout.cpp src/vertex_layout.h
     src/image.cpp src/image.h
     src/texture.cpp src/texture.h
+    physics/hiphysics.cpp physics/hiphysics.h
     )
 
 include(Dependency.cmake)
