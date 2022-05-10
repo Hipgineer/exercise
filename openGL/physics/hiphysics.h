@@ -28,8 +28,6 @@ class HiPhysicsSolver {
 public:
     static HiPhysicsSolverUPtr Create();
 
-    ~HiPhysicsSolver();
-
     // Set Functions
     // -- from buffer to solver
     void SetParticles();
@@ -46,8 +44,8 @@ public:
     uint32_t GetActiveCount() const { return m_numParticles; }
 
 private:
-    HiPhysicsSolver() {}
-    bool Init() {}
+    HiPhysicsSolver() {};
+    bool Init();
     
     uint32_t const m_numParticles { 0 } ;
     uint32_t const m_numFluidParticles { 0 } ;

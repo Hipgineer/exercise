@@ -58,14 +58,9 @@ void OnKeyEvent(GLFWwindow* window,
         glfwSetWindowShouldClose(window, true);
     }
     
-    if (key == GLFW_KEY_P && action == GLFW_PRESS) {
-        g_pause = !g_pause;
-    }
-    
-    if (key == GLFW_KEY_O && action == GLFW_PRESS) {
-        g_step  = true;
-    }
     context->PressKey(key, scancode, action, mods);
+    if (key == GLFW_KEY_P && action == GLFW_PRESS) g_pause = !g_pause;
+    if (key == GLFW_KEY_O && (action == GLFW_PRESS || action == GLFW_REPEAT)) g_step  = true;
 }
 
 int main(int argc, const char** argv)

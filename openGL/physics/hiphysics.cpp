@@ -35,3 +35,7 @@ void HiPhysicsSolver::SetParams() {
 void HiPhysicsSolver::UpdateSolver() {
 
 }
+
+bool HiPhysicsSolver::Init () {
+    return true;
+}
