@@ -6,8 +6,8 @@
 CLASS_PTR(Texture)
 class Texture{
 public:
-    // 그냥 포인터?
-    // 굳이 소유권을 내보낼 이유가 없다.
+    // just pointer, not unique one.
+    // -- why? there is no reason to handle SoYouKun
     static TextureUPtr CreateFromImage(const Image* image);
     ~Texture();
 

@@ -16,7 +16,9 @@ public:
     void ProcessInput(GLFWwindow* window);
     void MouseMove(double x, double y);
     void MouseButton(int button, int action, double x, double y);
+    void MouseWheel(double xoffset, double yoffset);
     void Reshape(int width, int height);
+    void PressKey(int key, int scancode, int action, int mods);
 
 private:
     Context() {};
@@ -41,6 +43,10 @@ private:
 
     int m_width {WINDOW_WIDTH};
     int m_height {WINDOW_HEIGHT};
+
+    int m_timestep = 0; // will be redefinded as global variable, check main loop.
+    bool m_pause = false; // will be redefinded as global variable, check main loop.
+    bool m_step = false; //will be redefinded as global variable, check main loop.
 };
 
 #endif //__CONTEXT_H__
