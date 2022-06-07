@@ -7,4 +7,4 @@ set(PROJECT_NAME BOJ_dbshin)
 set(CMAKE_CXX_STANDARD 17)
 
 project(${PROJECT_NAME})
-add_executable(${PROJECT_NAME} B_001_AdivB.cpp)
+add_executable(${PROJECT_NAME} solving/BOJ10866_deque.cpp)
